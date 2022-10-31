@@ -38,6 +38,7 @@ if ( $( bmgSectionSelctor ).length < 1 )
 
         ScrollTrigger.create({
             trigger: $section[0],
+            start: 'top 80%',
             onEnter: () => { whenSectionInView( index, $section, true ) }
         })
     })
