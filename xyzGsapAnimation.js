@@ -12,14 +12,15 @@ const mainWrapperSelector = '.main-wrapper',
     dontAnimateSelector = '[bmg-gsap = "0"]',
     freeFloatImageSelector = '[bmg-gsap = "free-float-image"]',
     dynItemSelctor = '.w-dyn-item, [bmg-gsap = "dyn"]',
-    bmgSectionSelctor = '[bmg-gsap = "section"]'
+    bmgSectionSelctor = '[bmg-gsap = "section"]',
+    fullScreenImageSelector = '[bmg-gsap = "fullscreen"]'
 
 let isFirstTrigger = []
 
 // # Main functions #
 
 // Navbar
-gsap.fromTo( $( '.navbar' ), { y: '-10rem', opacity: '0%' }, { y: '0rem', opacity: '100%', duration: 2, ease: "power4.out" })
+gsap.from( $( '.navbar' ), { alpha:0, y: '-10rem', duration: 2, ease: "power4.out" })
 
 // Prepare texts
 new SplitType( $(splitTextSelector).not( noSplitTextSelector ) )
@@ -76,16 +77,17 @@ function whenSectionInView( i, $section, navbarExists )
             imageTl = gsap.timeline()
         let $texts = $section.find( allTextSelctor ).not( dontAnimateSelector )
         let $freeFloatingImages = $section.find( freeFloatImageSelector )
-        let dynItems = $section.find( dynItemSelctor )
+        let $dynItems = $section.find( dynItemSelctor )
+        let $fullScreenImages = $section.find( fullScreenImageSelector )
 
         // Text animation
         $texts.each(function(index)
         {
-            let tlPosition = ( index > 1 ) ? '-=80%' : '+=0%'
+            let tlPosition = ( index > 0 ) ? '-=80%' : '+=0%'
             textTl.from( $(this)[0],
             {
                 y: '100%', 
-                opacity: '0', 
+                alpha: 0, 
                 duration: .65, 
                 ease: "power4.out" 
             }, tlPosition )
@@ -94,12 +96,12 @@ function whenSectionInView( i, $section, navbarExists )
         // Free floating images
         $freeFloatingImages.each(function(index) 
         {
-            let tlPosition = ( index > 1 ) ? '-=80%' : '+=.2'
+            let tlPosition = ( index > 0 ) ? '-=80%' : '+=.2'
             imageTl.from( $(this)[0],
             {
                 x: $(this).attr( 'translateX' ),
                 y: $(this).attr( 'translateY' ),
-                opacity: '0',
+                alpha: 0,
                 scale: 0.25,
                 duration: 3, 
                 ease: "power4.out" 
@@ -107,16 +109,29 @@ function whenSectionInView( i, $section, navbarExists )
         })
 
         // Dynamic items
-        dynItems.each(function(index) 
+        $dynItems.each(function(index) 
         {
-            let tlPosition = ( index > 1 ) ? '-=80%' : '+=0%'
+            let tlPosition = ( index > 0 ) ? '-=80%' : '+=0%'
             imageTl.from( $(this)[0],
             {
-                opacity: '0',
+                alpha: 0,
                 scale: 0.25,
                 duration: 1, 
                 ease: "power4.out" 
             }, tlPosition )
+        })
+
+        // Fullscreen images
+        $fullScreenImages.each(function(index) 
+        {
+            gsap.from( $(this)[0],
+            {
+                alpha: 0,
+                y: '25vh',
+                scale: 0.85,
+                duration: 1, 
+                ease: "power4.out" 
+            })
         })
     }
 }
