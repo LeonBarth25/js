@@ -52,6 +52,7 @@ else
 
         ScrollTrigger.create({
             trigger: $section[0],
+            start: 'top 80%',
             onEnter: () => { whenSectionInView( index, $section, false ) }
         })
     })
