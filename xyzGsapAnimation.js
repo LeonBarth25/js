@@ -73,58 +73,31 @@ function whenSectionInView( i, $section, navbarExists )
         isFirstTrigger[i] = false // Ensure correct function calling
 
         // Local variables & elements
-        let textTl = gsap.timeline(),
-            imageTl = gsap.timeline()
+        let tl = gsap.timeline()
         let $texts = $section.find( allTextSelctor ).not( dontAnimateSelector )
         let $freeFloatingImages = $section.find( freeFloatImageSelector )
         let $dynItems = $section.find( dynItemSelctor )
         let $fullScreenImages = $section.find( fullScreenImageSelector )
 
-        // Text animation
-        $texts.each(function(index)
-        {
-            let tlPosition = ( index > 0 ) ? '-=80%' : '+=0%'
-            textTl.from( $(this)[0],
-            {
-                y: '100%', 
-                alpha: 0, 
-                duration: .65, 
-                ease: "power4.out" 
-            }, tlPosition )
-        })
-
         // Free floating images
         $freeFloatingImages.each(function(index) 
         {
-            let tlPosition = ( index > 0 ) ? '-=80%' : '+=.2'
-            imageTl.from( $(this)[0],
+            gsap.from( $(this)[0],
             {
                 x: $(this).attr( 'translateX' ),
                 y: $(this).attr( 'translateY' ),
                 alpha: 0,
+                delay: .25,
                 scale: 0.25,
                 duration: 3, 
                 ease: "power4.out" 
-            }, tlPosition )
+            })
         })
-
-        // Dynamic items
-        $dynItems.each(function(index) 
-        {
-            let tlPosition = ( index > 0 ) ? '-=80%' : '+=0%'
-            imageTl.from( $(this)[0],
-            {
-                alpha: 0,
-                scale: 0.25,
-                duration: 1, 
-                ease: "power4.out" 
-            }, tlPosition )
-        })
-
+        
         // Fullscreen images
         $fullScreenImages.each(function(index) 
         {
-            gsap.from( $(this)[0],
+            tl.from( $(this)[0],
             {
                 alpha: 0,
                 y: '25vh',
@@ -133,7 +106,33 @@ function whenSectionInView( i, $section, navbarExists )
                 ease: "power4.out" 
             })
         })
+
+        // Text animation
+        $texts.each(function(index)
+        {
+            let tlPosition = ( index > 0 ) ? '-=80%' : '+=0%'
+            tl.from( $(this)[0],
+            {
+                y: '100%', 
+                alpha: 0, 
+                duration: .65, 
+                ease: "power4.out" 
+            }, tlPosition )
+        })
+
+        // Dynamic items
+        $dynItems.each(function(index) 
+        {
+            let tlPosition = '-=80%'
+            tl.from( $(this)[0],
+            {
+                alpha: 0,
+                scale: 0.25,
+                duration: 1, 
+                ease: "power4.out" 
+            }, tlPosition )
+        })
     }
 }
-
+    
 })() /* End of: GSAP animation code */
