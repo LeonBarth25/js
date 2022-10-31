@@ -1,4 +1,4 @@
-() => { /* Start of: GSAP animation code */
+(() => { /* Start of: GSAP animation code */
 
 // Initialize
 gsap.registerPlugin(ScrollTrigger)
@@ -121,4 +121,4 @@ function whenSectionInView( i, $section, navbarExists )
     }
 }
 
-}() /* End of: GSAP animation code */
+})() /* End of: GSAP animation code */
