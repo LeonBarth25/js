@@ -1,409 +1,505 @@
-let gsap,
-    _coreInitted,
-    _win,
-    _doc,
-    _docEl,
-    _body,
-    _root,
-    _toArray,
-    _clamp,
-    ScrollTrigger,
-    _mainInstance,
-    _expo,
-    _getVelocityProp,
-    _inputObserver,
-    _context,
-    _onResizeDelayedCall,
-    _windowExists = () => "undefined" != typeof window,
-    _getGSAP = () => gsap || (_windowExists() && (gsap = window.gsap) && gsap.registerPlugin && gsap),
-    _bonusValidated = 1,
-    _isViewport = (e) => !!~_root.indexOf(e),
-    _getTime = Date.now,
-    _round = (e) => Math.round(1e5 * e) / 1e5 || 0,
-    _autoDistance = (e, r) => {
-        let t = e.parentNode || _docEl,
-            o = e.getBoundingClientRect(),
-            i = t.getBoundingClientRect(),
-            s = i.top - o.top,
-            l = i.bottom - o.bottom,
-            n = (Math.abs(s) > Math.abs(l) ? s : l) / (1 - r),
-            a = -n * r,
-            c,
-            g;
-        return n > 0 && ((g = 0.5 == (c = i.height / (_win.innerHeight + i.height)) ? 2 * i.height : 2 * Math.min(i.height, (-n * c) / (2 * c - 1)) * (r || 1)), (a += r ? -g * r : -g / 2), (n += g)), { change: n, offset: a };
-    },
-    _wrap = (e) => {
-        let r = _doc.querySelector(".ScrollSmoother-wrapper");
-        return r || ((r = _doc.createElement("div")).classList.add("ScrollSmoother-wrapper"), e.parentNode.insertBefore(r, e), r.appendChild(e)), r;
-    };
-export class ScrollSmoother {
-    constructor(e) {
-        _coreInitted || ScrollSmoother.register(gsap) || console.warn("Please gsap.registerPlugin(ScrollSmoother)"), (e = this.vars = e || {}), _mainInstance && _mainInstance.kill(), (_mainInstance = this), _context(this);
-        let { smoothTouch: r, onUpdate: t, onStop: o, smooth: i, onFocusIn: s, normalizeScroll: l } = e,
-            n,
-            a,
-            c,
-            g,
-            d,
-            p,
-            h,
-            $,
-            u,
-            f,
-            m,
-            S,
-            y,
-            T = this,
-            v = "undefined" != typeof ResizeObserver && !1 !== e.autoResize && new ResizeObserver(() => ScrollTrigger.isRefreshing || _onResizeDelayedCall.restart(!0)),
-            w = e.effectsPrefix || "",
-            _ = ScrollTrigger.getScrollFunc(_win),
-            b = 1 === ScrollTrigger.isTouch ? (!0 === r ? 0.8 : parseFloat(r) || 0) : 0 === i || !1 === i ? 0 : parseFloat(i) || 0.8,
-            x = 0,
-            E = 0,
-            P = 1,
-            A = _getVelocityProp(0),
-            R = () => A.update(-x),
-            k = { y: 0 },
-            C = () => (n.style.overflow = "visible"),
-            I,
-            z = (e) => {
-                e.update();
-                let r = e.getTween();
-                r && (r.pause(), (r._time = r._dur), (r._tTime = r._tDur)), (I = !1), e.animation.progress(e.progress, !0);
-            },
-            V = (e, r) => {
-                ((e !== x && !f) || r) && (b && ((n.style.transform = "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, " + e + ", 0, 1)"), (n._gsap.y = e + "px")), (E = e - x), (x = e), ScrollTrigger.isUpdating || ScrollTrigger.update());
-            },
-            B = function (e) {
-                return arguments.length ? (e < 0 && (e = 0), (k.y = -e), (I = !0), f ? (x = -e) : V(-e), ScrollTrigger.isRefreshing ? g.update() : _(e), this) : -x;
-            },
-            D,
-            L = (e) => {
-                (a.scrollTop = 0), !(e.target.contains && e.target.contains(a)) && (!s || !1 !== s(this, e)) && (ScrollTrigger.isInViewport(e.target) || e.target === D || this.scrollTo(e.target, !1, "center center"), (D = e.target));
-            },
-            O = (e, r) => {
-                let t, o, i, s;
-                d.forEach((r) => {
-                    (t = r.pins),
-                        (s = r.markers),
-                        e.forEach((e) => {
-                            r.trigger &&
-                                e.trigger &&
-                                r !== e &&
-                                (e.trigger === r.trigger || e.pinnedContainer === r.trigger || r.trigger.contains(e.trigger)) &&
-                                ((i = ((o = e.start) - r.start - r.offset) / r.ratio - (o - r.start)),
-                                t.forEach((e) => (i -= e.distance / r.ratio - e.distance)),
-                                e.setPositions(o + i, e.end + i),
-                                e.markerStart && s.push(gsap.quickSetter([e.markerStart, e.markerEnd], "y", "px")),
-                                e.pin && e.end > 0 && ((i = e.end - e.start), t.push({ start: e.start, end: e.end, distance: i, trig: e }), r.setPositions(r.start, r.end + i), r.vars.onRefresh(r)));
-                        });
-                });
-            },
-            H = () => {
-                C(),
-                    requestAnimationFrame(C),
-                    d &&
-                        (d.forEach((e) => {
-                            let r = e.start,
-                                t = e.auto ? Math.min(ScrollTrigger.maxScroll(e.scroller), e.end) : r + (e.end - r) / e.ratio,
-                                o = (t - e.end) / 2;
-                            (r -= o), (t -= o), (e.offset = o || 1e-4), (e.pins.length = 0), e.setPositions(Math.min(r, t), Math.max(r, t)), e.vars.onRefresh(e);
-                        }),
-                        O(ScrollTrigger.sort())),
-                    A.reset();
-            },
-            U = () => ScrollTrigger.addEventListener("refresh", H),
-            G = () => d && d.forEach((e) => e.vars.onRefresh(e)),
-            N = () => (d && d.forEach((e) => e.vars.onRefreshInit(e)), G),
-            q = (e, r, t, o) => () => {
-                let i = "function" == typeof r ? r(t, o) : r;
-                return i || 0 === i || (i = o.getAttribute("data-" + w + e) || ("speed" === e ? 1 : 0)), o.setAttribute("data-" + w + e, i), "auto" === i ? i : parseFloat(i);
-            },
-            M = (e, r, t, o) => {
-                let i = q("speed", r, o, e),
-                    s = q("lag", t, o, e),
-                    l = gsap.getProperty(e, "y"),
-                    n = e._gsap,
-                    c,
-                    g,
-                    p,
-                    h,
-                    $,
-                    u,
-                    f = () => {
-                        (r = i()),
-                            (t = s()),
-                            (c = parseFloat(r) || 1),
-                            ($ = (p = "auto" === r) ? 0 : 0.5),
-                            h && h.kill(),
-                            (h = t && gsap.to(e, { ease: _expo, overwrite: !1, y: "+=0", duration: t })),
-                            g && ((g.ratio = c), (g.autoSpeed = p));
-                    },
-                    m = () => {
-                        (n.y = l + "px"), n.renderTransform(1), f();
-                    },
-                    S = [],
-                    y = [],
-                    T = 0,
-                    v = (r) => {
-                        if (p) {
-                            m();
-                            let t = _autoDistance(e, _clamp(0, 1, -r.start / (r.end - r.start)));
-                            (T = t.change), (u = t.offset);
-                        } else (T = (r.end - r.start) * (1 - c)), (u = 0);
-                        S.forEach((e) => (T -= e.distance * (1 - c))), r.vars.onUpdate(r), h && h.progress(1);
-                    };
+!(function (e, t) {
+    "object" == typeof exports && "undefined" != typeof module ? t(exports) : "function" == typeof define && define.amd ? define(["exports"], t) : t(((e = e || self).window = e.window || {}));
+})(this, function (e) {
+    "use strict";
+    function _defineProperties(e, t) {
+        for (var r = 0; r < t.length; r++) {
+            var n = t[r];
+            (n.enumerable = n.enumerable || !1), (n.configurable = !0), "value" in n && (n.writable = !0), Object.defineProperty(e, n.key, n);
+        }
+    }
+    function s() {
+        return "undefined" != typeof window;
+    }
+    function t() {
+        return I || (s() && (I = window.gsap) && I.registerPlugin && I);
+    }
+    var I,
+        M,
+        L,
+        D,
+        O,
+        U,
+        N,
+        q,
+        K,
+        V,
+        j,
+        G,
+        Y,
+        J,
+        W,
+        r =
+            ((ScrollSmoother.register = function register(e) {
                 return (
-                    f(),
-                    (1 !== c || p || h) &&
-                        ((g = ScrollTrigger.create({
-                            trigger: p ? e.parentNode : e,
-                            scroller: a,
+                    M ||
+                        ((I = e || t()),
+                        s() && window.document && ((L = window), (D = document), (O = D.documentElement), (U = D.body)),
+                        I &&
+                            ((N = I.utils.toArray),
+                            (q = I.utils.clamp),
+                            (j = I.parseEase("expo")),
+                            (J = I.core.context || function () {}),
+                            (W = I.delayedCall(0.2, function () {
+                                return K.isRefreshing || (V && V.refresh());
+                            }).pause()),
+                            (K = I.core.globals().ScrollTrigger),
+                            I.core.globals("ScrollSmoother", ScrollSmoother),
+                            U && K && ((G = K.core._getVelocityProp), (Y = K.core._inputObserver), (ScrollSmoother.refresh = K.refresh), (M = 1)))),
+                    M
+                );
+            }),
+            (function _createClass(e, t, r) {
+                return t && _defineProperties(e.prototype, t), r && _defineProperties(e, r), e;
+            })(ScrollSmoother, [
+                {
+                    key: "progress",
+                    get: function get() {
+                        return this.scrollTrigger ? this.scrollTrigger.animation._time / 100 : 0;
+                    },
+                },
+            ]),
+            ScrollSmoother);
+    function ScrollSmoother(e) {
+        var o = this;
+        M || ScrollSmoother.register(I) || console.warn("Please gsap.registerPlugin(ScrollSmoother)"), (e = this.vars = e || {}), V && V.kill(), J((V = this));
+        function xa() {
+            return H.update(-_);
+        }
+        function za() {
+            return (n.style.overflow = "visible");
+        }
+        function Ba(e) {
+            e.update();
+            var t = e.getTween();
+            t && (t.pause(), (t._time = t._dur), (t._tTime = t._tDur)), (g = !1), e.animation.progress(e.progress, !0);
+        }
+        function Ca(e, t) {
+            ((e !== _ && !u) || t) && (k && ((n.style.transform = "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, " + e + ", 0, 1)"), (n._gsap.y = e + "px")), (B = e - _), (_ = e), K.isUpdating || K.update());
+        }
+        function Da(e) {
+            return arguments.length ? (e < 0 && (e = 0), (F.y = -e), (g = !0), u ? (_ = -e) : Ca(-e), K.isRefreshing ? i.update() : R(e), this) : -_;
+        }
+        function Fa(e) {
+            (m.scrollTop = 0), (e.target.contains && e.target.contains(m)) || (T && !1 === T(o, e)) || (K.isInViewport(e.target) || e.target === d || o.scrollTo(e.target, !1, "center center"), (d = e.target));
+        }
+        function Ga(e) {
+            var r, n, o, i;
+            b.forEach(function (t) {
+                (r = t.pins),
+                    (i = t.markers),
+                    e.forEach(function (e) {
+                        t.trigger &&
+                            e.trigger &&
+                            t !== e &&
+                            (e.trigger === t.trigger || e.pinnedContainer === t.trigger || t.trigger.contains(e.trigger)) &&
+                            ((n = e.start),
+                            (o = (n - t.start - t.offset) / t.ratio - (n - t.start)),
+                            r.forEach(function (e) {
+                                return (o -= e.distance / t.ratio - e.distance);
+                            }),
+                            e.setPositions(n + o, e.end + o),
+                            e.markerStart && i.push(I.quickSetter([e.markerStart, e.markerEnd], "y", "px")),
+                            e.pin && 0 < e.end && ((o = e.end - e.start), r.push({ start: e.start, end: e.end, distance: o, trig: e }), t.setPositions(t.start, t.end + o), t.vars.onRefresh(t)));
+                    });
+            });
+        }
+        function Ha() {
+            za(),
+                requestAnimationFrame(za),
+                b &&
+                    (b.forEach(function (e) {
+                        var t = e.start,
+                            r = e.auto ? Math.min(K.maxScroll(e.scroller), e.end) : t + (e.end - t) / e.ratio,
+                            n = (r - e.end) / 2;
+                        (t -= n), (r -= n), (e.offset = n || 1e-4), (e.pins.length = 0), e.setPositions(Math.min(t, r), Math.max(t, r)), e.vars.onRefresh(e);
+                    }),
+                    Ga(K.sort())),
+                H.reset();
+        }
+        function Ia() {
+            return K.addEventListener("refresh", Ha);
+        }
+        function Ja() {
+            return (
+                b &&
+                b.forEach(function (e) {
+                    return e.vars.onRefresh(e);
+                })
+            );
+        }
+        function Ka() {
+            return (
+                b &&
+                    b.forEach(function (e) {
+                        return e.vars.onRefreshInit(e);
+                    }),
+                Ja
+            );
+        }
+        function La(t, r, n, o) {
+            return function () {
+                var e = "function" == typeof r ? r(n, o) : r;
+                return e || 0 === e || (e = o.getAttribute("data-" + P + t) || ("speed" === t ? 1 : 0)), o.setAttribute("data-" + P + t, e), "auto" === e ? e : parseFloat(e);
+            };
+        }
+        function Ma(r, e, t, n) {
+            function Ab() {
+                (e = s()), (t = f()), (o = parseFloat(e) || 1), (c = (a = "auto" === e) ? 0 : 0.5), l && l.kill(), (l = t && I.to(r, { ease: j, overwrite: !1, y: "+=0", duration: t })), i && ((i.ratio = o), (i.autoSpeed = a));
+            }
+            function Bb() {
+                (g.y = h + "px"), g.renderTransform(1), Ab();
+            }
+            function Fb(e) {
+                if (a) {
+                    Bb();
+                    var t = (function _autoDistance(e, t) {
+                        var r,
+                            n,
+                            o = e.parentNode || O,
+                            i = e.getBoundingClientRect(),
+                            s = o.getBoundingClientRect(),
+                            a = s.top - i.top,
+                            l = s.bottom - i.bottom,
+                            c = (Math.abs(a) > Math.abs(l) ? a : l) / (1 - t),
+                            u = -c * t;
+                        return 0 < c && ((n = 0.5 == (r = s.height / (L.innerHeight + s.height)) ? 2 * s.height : 2 * Math.min(s.height, (-c * r) / (2 * r - 1)) * (t || 1)), (u += t ? -n * t : -n / 2), (c += n)), { change: c, offset: u };
+                    })(r, q(0, 1, -e.start / (e.end - e.start)));
+                    (v = t.change), (u = t.offset);
+                } else (v = (e.end - e.start) * (1 - o)), (u = 0);
+                d.forEach(function (e) {
+                    return (v -= e.distance * (1 - o));
+                }),
+                    e.vars.onUpdate(e),
+                    l && l.progress(1);
+            }
+            var o,
+                i,
+                a,
+                l,
+                c,
+                u,
+                s = La("speed", e, n, r),
+                f = La("lag", t, n, r),
+                h = I.getProperty(r, "y"),
+                g = r._gsap,
+                d = [],
+                p = [],
+                v = 0;
+            return (
+                Ab(),
+                (1 !== o || a || l) &&
+                    (Fb(
+                        (i = K.create({
+                            trigger: a ? r.parentNode : r,
+                            scroller: m,
                             scrub: !0,
                             refreshPriority: -999,
-                            onRefreshInit: m,
-                            onRefresh: v,
-                            onKill(e) {
-                                let r = d.indexOf(e);
-                                r >= 0 && d.splice(r, 1), m();
+                            onRefreshInit: Bb,
+                            onRefresh: Fb,
+                            onKill: function onKill(e) {
+                                var t = b.indexOf(e);
+                                0 <= t && b.splice(t, 1), Bb();
                             },
-                            onUpdate(e) {
-                                let r = l + T * (e.progress - $),
-                                    t = S.length,
-                                    o = 0,
-                                    i,
-                                    s,
-                                    a;
+                            onUpdate: function onUpdate(e) {
+                                var t,
+                                    r,
+                                    n,
+                                    o = h + v * (e.progress - c),
+                                    i = d.length,
+                                    s = 0;
                                 if (e.offset) {
-                                    if (t) {
-                                        for (s = -x, a = e.end; t--; ) {
-                                            if ((i = S[t]).trig.isActive || (s >= i.start && s <= i.end)) {
-                                                h && ((i.trig.progress += i.trig.direction < 0 ? 0.001 : -0.001), i.trig.update(0, 0, 1), h.resetTo("y", parseFloat(n.y), -E, !0), P && h.progress(1));
-                                                return;
-                                            }
-                                            s > i.end && (o += i.distance), (a -= i.distance);
+                                    if (i) {
+                                        for (r = -_, n = e.end; i--; ) {
+                                            if ((t = d[i]).trig.isActive || (r >= t.start && r <= t.end))
+                                                return void (l && ((t.trig.progress += t.trig.direction < 0 ? 0.001 : -0.001), t.trig.update(0, 0, 1), l.resetTo("y", parseFloat(g.y), -B, !0), A && l.progress(1)));
+                                            r > t.end && (s += t.distance), (n -= t.distance);
                                         }
-                                        r = l + o + T * ((gsap.utils.clamp(e.start, e.end, s) - e.start - o) / (a - e.start) - $);
+                                        o = h + s + v * ((I.utils.clamp(e.start, e.end, r) - e.start - s) / (n - e.start) - c);
                                     }
-                                    (r = _round(r + u)), y.length && !p && y.forEach((e) => e(r - o)), h ? (h.resetTo("y", r, -E, !0), P && h.progress(1)) : ((n.y = r + "px"), n.renderTransform(1));
+                                    (o = (function _round(e) {
+                                        return Math.round(1e5 * e) / 1e5 || 0;
+                                    })(o + u)),
+                                        p.length &&
+                                            !a &&
+                                            p.forEach(function (e) {
+                                                return e(o - s);
+                                            }),
+                                        l ? (l.resetTo("y", o, -B, !0), A && l.progress(1)) : ((g.y = o + "px"), g.renderTransform(1));
                                 }
                             },
-                        })),
-                        v(g),
-                        (gsap.core.getCache(g.trigger).stRevert = N),
-                        (g.startY = l),
-                        (g.pins = S),
-                        (g.markers = y),
-                        (g.ratio = c),
-                        (g.autoSpeed = p),
-                        (e.style.willChange = "transform")),
-                    g
-                );
-            };
-        function Y() {
-            return (c = n.clientHeight), (n.style.overflow = "visible"), (_body.style.height = c + "px"), c - _win.innerHeight;
+                        }))
+                    ),
+                    (I.core.getCache(i.trigger).stRevert = Ka),
+                    (i.startY = h),
+                    (i.pins = d),
+                    (i.markers = p),
+                    (i.ratio = o),
+                    (i.autoSpeed = a),
+                    (r.style.willChange = "transform")),
+                i
+            );
         }
-        U(),
-            ScrollTrigger.addEventListener("killAll", U),
-            gsap.delayedCall(0.5, () => (P = 0)),
-            (this.scrollTop = B),
-            (this.scrollTo = (e, r, t) => {
-                let o = gsap.utils.clamp(0, ScrollTrigger.maxScroll(_win), isNaN(e) ? this.offset(e, t) : +e);
-                r ? (f ? gsap.to(this, { duration: b, scrollTop: o, overwrite: "auto", ease: _expo }) : _(o)) : B(o);
+        var n,
+            m,
+            t,
+            i,
+            b,
+            s,
+            a,
+            l,
+            c,
+            u,
+            r,
+            f,
+            h,
+            g,
+            d,
+            p = e.smoothTouch,
+            v = e.onUpdate,
+            S = e.onStop,
+            w = e.smooth,
+            T = e.onFocusIn,
+            x = e.normalizeScroll,
+            C = this,
+            E =
+                "undefined" != typeof ResizeObserver &&
+                !1 !== e.autoResize &&
+                new ResizeObserver(function () {
+                    return K.isRefreshing || W.restart(!0);
+                }),
+            P = e.effectsPrefix || "",
+            R = K.getScrollFunc(L),
+            k = 1 === K.isTouch ? (!0 === p ? 0.8 : parseFloat(p) || 0) : 0 === w || !1 === w ? 0 : parseFloat(w) || 0.8,
+            _ = 0,
+            B = 0,
+            A = 1,
+            H = G(0),
+            F = { y: 0 };
+        function refreshHeight() {
+            return (t = n.clientHeight), (n.style.overflow = "visible"), (U.style.height = t + "px"), t - L.innerHeight;
+        }
+        Ia(),
+            K.addEventListener("killAll", Ia),
+            I.delayedCall(0.5, function () {
+                return (A = 0);
             }),
-            (this.offset = (e, r) => {
-                let t = (e = _toArray(e)[0]).style.cssText,
-                    o = ScrollTrigger.create({ trigger: e, start: r || "top top" }),
-                    i;
-                return d && O([o], !0), (i = o.start), o.kill(!1), (e.style.cssText = t), (gsap.core.getCache(e).uncache = 1), i;
+            (this.scrollTop = Da),
+            (this.scrollTo = function (e, t, r) {
+                var n = I.utils.clamp(0, K.maxScroll(L), isNaN(e) ? o.offset(e, r) : +e);
+                t ? (u ? I.to(o, { duration: k, scrollTop: n, overwrite: "auto", ease: j }) : R(n)) : Da(n);
+            }),
+            (this.offset = function (e, t) {
+                var r,
+                    n = (e = N(e)[0]).style.cssText,
+                    o = K.create({ trigger: e, start: t || "top top" });
+                return b && Ga([o]), (r = o.start), o.kill(!1), (e.style.cssText = n), (I.core.getCache(e).uncache = 1), r;
             }),
             (this.content = function (e) {
                 if (arguments.length) {
-                    let r = _toArray(e || "#smooth-content")[0] || console.warn("ScrollSmoother needs a valid content element.") || _body.children[0];
-                    return (
-                        r !== n && ((u = (n = r).getAttribute("style") || ""), v && v.observe(n), gsap.set(n, { overflow: "visible", width: "100%", boxSizing: "border-box", y: "+=0" }), b || gsap.set(n, { clearProps: "transform" })), this
-                    );
+                    var t = N(e || "#smooth-content")[0] || console.warn("ScrollSmoother needs a valid content element.") || U.children[0];
+                    return t !== n && ((c = (n = t).getAttribute("style") || ""), E && E.observe(n), I.set(n, { overflow: "visible", width: "100%", boxSizing: "border-box", y: "+=0" }), k || I.set(n, { clearProps: "transform" })), this;
                 }
                 return n;
             }),
             (this.wrapper = function (e) {
                 return arguments.length
-                    ? (($ = (a = _toArray(e || "#smooth-wrapper")[0] || _wrap(n)).getAttribute("style") || ""),
-                      Y(),
-                      gsap.set(
-                          a,
-                          b
+                    ? ((m =
+                          N(e || "#smooth-wrapper")[0] ||
+                          (function _wrap(e) {
+                              var t = D.querySelector(".ScrollSmoother-wrapper");
+                              return t || ((t = D.createElement("div")).classList.add("ScrollSmoother-wrapper"), e.parentNode.insertBefore(t, e), t.appendChild(e)), t;
+                          })(n)),
+                      (l = m.getAttribute("style") || ""),
+                      refreshHeight(),
+                      I.set(
+                          m,
+                          k
                               ? { overflow: "hidden", position: "fixed", height: "100%", width: "100%", top: 0, left: 0, right: 0, bottom: 0 }
                               : { overflow: "visible", position: "relative", width: "100%", height: "auto", top: "auto", bottom: "auto", left: "auto", right: "auto" }
                       ),
                       this)
-                    : a;
+                    : m;
             }),
-            (this.effects = (e, r) => {
-                if ((d || (d = []), !e)) return d.slice(0);
-                (e = _toArray(e)).forEach((e) => {
-                    let r = d.length;
-                    for (; r--; ) d[r].trigger === e && d[r].kill();
+            (this.effects = function (e, t) {
+                if (((b = b || []), !e)) return b.slice(0);
+                (e = N(e)).forEach(function (e) {
+                    for (var t = b.length; t--; ) b[t].trigger === e && b[t].kill();
                 });
-                let { speed: t, lag: o } = (r = r || {}),
-                    i = [],
-                    s,
-                    l;
-                for (s = 0; s < e.length; s++) (l = M(e[s], t, o, s)) && i.push(l);
-                return d.push(...i), i;
+                t = t || {};
+                var r,
+                    n,
+                    o = t.speed,
+                    i = t.lag,
+                    s = [];
+                for (r = 0; r < e.length; r++) (n = Ma(e[r], o, i, r)) && s.push(n);
+                return b.push.apply(b, s), s;
             }),
-            (this.sections = (e, r) => {
-                if ((p || (p = []), !e)) return p.slice(0);
-                let t = _toArray(e).map((e) =>
-                    ScrollTrigger.create({
-                        trigger: e,
+            (this.sections = function (e, t) {
+                if (((s = s || []), !e)) return s.slice(0);
+                var r = N(e).map(function (t) {
+                    return K.create({
+                        trigger: t,
                         start: "top 120%",
                         end: "bottom -20%",
-                        onToggle(r) {
-                            (e.style.opacity = r.isActive ? "1" : "0"), (e.style.pointerEvents = r.isActive ? "all" : "none");
+                        onToggle: function onToggle(e) {
+                            (t.style.opacity = e.isActive ? "1" : "0"), (t.style.pointerEvents = e.isActive ? "all" : "none");
                         },
-                    })
-                );
-                return r && r.add ? p.push(...t) : (p = t.slice(0)), t;
+                    });
+                });
+                return t && t.add ? s.push.apply(s, r) : (s = r.slice(0)), r;
             }),
             this.content(e.content),
             this.wrapper(e.wrapper),
-            (this.render = (e) => V(e || 0 === e ? e : x)),
-            (this.getVelocity = () => A.getVelocity(-x)),
-            ScrollTrigger.scrollerProxy(a, {
-                scrollTop: B,
-                scrollHeight: () => Y() && _body.scrollHeight,
-                fixedMarkers: !1 !== e.fixedMarkers && !!b,
-                content: n,
-                getBoundingClientRect: () => ({ top: 0, left: 0, width: _win.innerWidth, height: _win.innerHeight }),
+            (this.render = function (e) {
+                return Ca(e || 0 === e ? e : _);
             }),
-            ScrollTrigger.defaults({ scroller: a });
-        let F = ScrollTrigger.getAll().filter((e) => e.scroller === _win || e.scroller === a);
-        F.forEach((e) => e.revert(!0)),
-            (g = ScrollTrigger.create({
-                animation: gsap.fromTo(
-                    k,
+            (this.getVelocity = function () {
+                return H.getVelocity(-_);
+            }),
+            K.scrollerProxy(m, {
+                scrollTop: Da,
+                scrollHeight: function scrollHeight() {
+                    return refreshHeight() && U.scrollHeight;
+                },
+                fixedMarkers: !1 !== e.fixedMarkers && !!k,
+                content: n,
+                getBoundingClientRect: function getBoundingClientRect() {
+                    return { top: 0, left: 0, width: L.innerWidth, height: L.innerHeight };
+                },
+            }),
+            K.defaults({ scroller: m });
+        var z = K.getAll().filter(function (e) {
+            return e.scroller === L || e.scroller === m;
+        });
+        z.forEach(function (e) {
+            return e.revert(!0);
+        }),
+            (i = K.create({
+                animation: I.fromTo(
+                    F,
                     { y: 0 },
                     {
-                        y: () => -Y(),
+                        y: function y() {
+                            return -refreshHeight();
+                        },
                         immediateRender: !1,
                         ease: "none",
                         data: "ScrollSmoother",
                         duration: 100,
-                        onUpdate: function () {
+                        onUpdate: function onUpdate() {
                             if (this._dur) {
-                                let e = I;
-                                e && (z(g), (k.y = x)), V(k.y, e), R(), t && !f && t(T);
+                                var e = g;
+                                e && (Ba(i), (F.y = _)), Ca(F.y, e), xa(), v && !u && v(C);
                             }
                         },
                     }
                 ),
-                onRefreshInit(e) {
-                    if (d) {
-                        let r = ScrollTrigger.getAll().filter((e) => !!e.pin);
-                        d.forEach((e) => {
-                            e.vars.pinnedContainer ||
-                                r.forEach((r) => {
-                                    if (r.pin.contains(e.trigger)) {
-                                        let t = e.vars;
-                                        (t.pinnedContainer = r.pin), (e.vars = null), e.init(t, e.animation);
+                onRefreshInit: function onRefreshInit(e) {
+                    if (b) {
+                        var t = K.getAll().filter(function (e) {
+                            return !!e.pin;
+                        });
+                        b.forEach(function (r) {
+                            r.vars.pinnedContainer ||
+                                t.forEach(function (e) {
+                                    if (e.pin.contains(r.trigger)) {
+                                        var t = r.vars;
+                                        (t.pinnedContainer = e.pin), (r.vars = null), r.init(t, r.animation);
                                     }
                                 });
                         });
                     }
-                    let t = e.getTween();
-                    (y = t && t._end > t._dp._time), (S = x), (k.y = 0), b && ((a.style.pointerEvents = "none"), (a.scrollTop = 0), setTimeout(() => a.style.removeProperty("pointer-events"), 50));
+                    var r = e.getTween();
+                    (h = r && r._end > r._dp._time),
+                        (f = _),
+                        (F.y = 0),
+                        k &&
+                            ((m.style.pointerEvents = "none"),
+                            (m.scrollTop = 0),
+                            setTimeout(function () {
+                                return m.style.removeProperty("pointer-events");
+                            }, 50));
                 },
-                onRefresh(e) {
-                    e.animation.invalidate(), e.setPositions(e.start, Y()), y || z(e), (k.y = -_()), V(k.y), P || e.animation.progress(gsap.utils.clamp(0, 1, -(S / e.end))), y && ((e.progress -= 0.001), e.update());
+                onRefresh: function onRefresh(e) {
+                    e.animation.invalidate(), e.setPositions(e.start, refreshHeight()), h || Ba(e), (F.y = -R()), Ca(F.y), A || e.animation.progress(I.utils.clamp(0, 1, f / -e.end)), h && ((e.progress -= 0.001), e.update());
                 },
                 id: "ScrollSmoother",
-                scroller: _win,
+                scroller: L,
                 invalidateOnRefresh: !0,
                 start: 0,
                 refreshPriority: -9999,
-                end: Y,
-                onScrubComplete: () => {
-                    A.reset(), o && o(this);
+                end: refreshHeight,
+                onScrubComplete: function onScrubComplete() {
+                    H.reset(), S && S(o);
                 },
-                scrub: b || !0,
+                scrub: k || !0,
             })),
             (this.smooth = function (e) {
-                return arguments.length && (b = e || 0), arguments.length ? g.scrubDuration(e) : g.getTween() ? g.getTween().duration() : 0;
+                return arguments.length && (k = e || 0), arguments.length ? i.scrubDuration(e) : i.getTween() ? i.getTween().duration() : 0;
             }),
-            g.getTween() && (g.getTween().vars.ease = e.ease || _expo),
-            (this.scrollTrigger = g),
-            e.effects && this.effects(!0 === e.effects ? "[data-" + w + "speed], [data-" + w + "lag]" : e.effects, {}),
+            i.getTween() && (i.getTween().vars.ease = e.ease || j),
+            (this.scrollTrigger = i),
+            e.effects && this.effects(!0 === e.effects ? "[data-" + P + "speed], [data-" + P + "lag]" : e.effects, {}),
             e.sections && this.sections(!0 === e.sections ? "[data-section]" : e.sections),
-            F.forEach((e) => {
-                (e.vars.scroller = a), e.init(e.vars, e.animation);
+            z.forEach(function (e) {
+                (e.vars.scroller = m), e.init(e.vars, e.animation);
             }),
-            (this.paused = function (e, r) {
+            (this.paused = function (e, t) {
                 return arguments.length
-                    ? (!!f !== e &&
+                    ? (!!u !== e &&
                           (e
-                              ? (g.getTween() && g.getTween().pause(),
-                                _(-x),
-                                A.reset(),
-                                (m = ScrollTrigger.normalizeScroll()) && m.disable(),
-                                ((f = ScrollTrigger.observe({ preventDefault: !0, type: "wheel,touch,scroll", debounce: !1, allowClicks: !0, onChangeY: () => B(-x) })).nested = _inputObserver(_docEl, "wheel,touch,scroll", !0, !1 !== r)))
-                              : (f.nested.kill(), f.kill(), (f = 0), m && m.enable(), (g.progress = (-x - g.start) / (g.end - g.start)), z(g))),
+                              ? (i.getTween() && i.getTween().pause(),
+                                R(-_),
+                                H.reset(),
+                                (r = K.normalizeScroll()) && r.disable(),
+                                ((u = K.observe({
+                                    preventDefault: !0,
+                                    type: "wheel,touch,scroll",
+                                    debounce: !1,
+                                    allowClicks: !0,
+                                    onChangeY: function onChangeY() {
+                                        return Da(-_);
+                                    },
+                                })).nested = Y(O, "wheel,touch,scroll", !0, !1 !== t)))
+                              : (u.nested.kill(), u.kill(), (u = 0), r && r.enable(), (i.progress = (-_ - i.start) / (i.end - i.start)), Ba(i))),
                       this)
-                    : !!f;
+                    : !!u;
             }),
-            (this.kill = this.revert = () => {
-                this.paused(!1), z(g), g.kill();
-                let e = (d || []).concat(p || []),
-                    r = e.length;
-                for (; r--; ) e[r].kill();
-                ScrollTrigger.scrollerProxy(a), ScrollTrigger.removeEventListener("killAll", U), ScrollTrigger.removeEventListener("refresh", H), (a.style.cssText = $), (n.style.cssText = u);
-                let t = ScrollTrigger.defaults({});
-                t && t.scroller === a && ScrollTrigger.defaults({ scroller: _win }),
-                    this.normalizer && ScrollTrigger.normalizeScroll(!1),
-                    clearInterval(h),
-                    (_mainInstance = null),
-                    v && v.disconnect(),
-                    _body.style.removeProperty("height"),
-                    _win.removeEventListener("focusin", L);
+            (this.kill = this.revert = function () {
+                o.paused(!1), Ba(i), i.kill();
+                for (var e = (b || []).concat(s || []), t = e.length; t--; ) e[t].kill();
+                K.scrollerProxy(m), K.removeEventListener("killAll", Ia), K.removeEventListener("refresh", Ha), (m.style.cssText = l), (n.style.cssText = c);
+                var r = K.defaults({});
+                r && r.scroller === m && K.defaults({ scroller: L }), o.normalizer && K.normalizeScroll(!1), clearInterval(a), (V = null), E && E.disconnect(), U.style.removeProperty("height"), L.removeEventListener("focusin", Fa);
             }),
-            (this.refresh = (e, r) => g.refresh(e, r)),
-            l && (this.normalizer = ScrollTrigger.normalizeScroll(!0 === l ? { debounce: !0, content: !b && n } : l)),
-            ScrollTrigger.config(e),
-            "overscrollBehavior" in _win.getComputedStyle(_body) && gsap.set([_body, _docEl], { overscrollBehavior: "none" }),
-            "scrollBehavior" in _win.getComputedStyle(_body) && gsap.set([_body, _docEl], { scrollBehavior: "auto" }),
-            _win.addEventListener("focusin", L),
-            (h = setInterval(R, 250)),
-            "loading" === _doc.readyState || requestAnimationFrame(() => ScrollTrigger.refresh());
+            (this.refresh = function (e, t) {
+                return i.refresh(e, t);
+            }),
+            x && (this.normalizer = K.normalizeScroll(!0 === x ? { debounce: !0, content: !k && n } : x)),
+            K.config(e),
+            "overscrollBehavior" in L.getComputedStyle(U) && I.set([U, O], { overscrollBehavior: "none" }),
+            "scrollBehavior" in L.getComputedStyle(U) && I.set([U, O], { scrollBehavior: "auto" }),
+            L.addEventListener("focusin", Fa),
+            (a = setInterval(xa, 250)),
+            "loading" === D.readyState ||
+                requestAnimationFrame(function () {
+                    return K.refresh();
+                });
     }
-    get progress() {
-        return this.scrollTrigger ? this.scrollTrigger.animation._time / 100 : 0;
+    (r.version = "3.11.3"),
+        (r.create = function (e) {
+            return V && e && V.content() === N(e.content)[0] ? V : new r(e);
+        }),
+        (r.get = function () {
+            return V;
+        }),
+        t() && I.registerPlugin(r),
+        (e.ScrollSmoother = r),
+        (e.default = r);
+    if (typeof window === "undefined" || window !== e) {
+        Object.defineProperty(e, "__esModule", { value: !0 });
+    } else {
+        delete e.default;
     }
-    static register(e) {
-        return (
-            !_coreInitted &&
-                ((gsap = e || _getGSAP()),
-                _windowExists() && window.document && ((_win = window), (_docEl = (_doc = document).documentElement), (_body = _doc.body)),
-                gsap &&
-                    ((_toArray = gsap.utils.toArray),
-                    (_clamp = gsap.utils.clamp),
-                    (_expo = gsap.parseEase("expo")),
-                    (_context = gsap.core.context || function () {}),
-                    (_onResizeDelayedCall = gsap.delayedCall(0.2, () => ScrollTrigger.isRefreshing || (_mainInstance && _mainInstance.refresh())).pause()),
-                    (ScrollTrigger = gsap.core.globals().ScrollTrigger),
-                    gsap.core.globals("ScrollSmoother", ScrollSmoother),
-                    _body &&
-                        ScrollTrigger &&
-                        ((_root = [_win, _doc, _docEl, _body]),
-                        (_getVelocityProp = ScrollTrigger.core._getVelocityProp || NaN),
-                        (_inputObserver = ScrollTrigger.core._inputObserver),
-                        (ScrollSmoother.refresh = ScrollTrigger.refresh),
-                        (_coreInitted = 1)))),
-            _coreInitted
-        );
-    }
-}
-(ScrollSmoother.version = "3.11.3"),
-    (ScrollSmoother.create = (e) => (_mainInstance && e && _mainInstance.content() === _toArray(e.content)[0] ? _mainInstance : new ScrollSmoother(e))),
-    (ScrollSmoother.get = () => _mainInstance),
-    _getGSAP() && gsap.registerPlugin(ScrollSmoother);
-export { ScrollSmoother as default };
+});
