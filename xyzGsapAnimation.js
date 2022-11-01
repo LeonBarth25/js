@@ -77,7 +77,7 @@ function whenSectionInView( i, $section, navbarExists, nOfSections )
 
         // Local variables & elements
         let tl = gsap.timeline(),
-            $headings = $section.find( headingsSelector ).not( dontAnimateSelector ).find( '.line' )
+            $headings = $section.find( headingsSelector ).not( dontAnimateSelector ).find( '.line' ),
             $texts = $section.find( allTextSelctor ).not( dontAnimateSelector ).not( $headings ),
             $freeFloatingImages = $section.find( freeFloatImageSelector ),
             $dynItems = $section.find( dynItemSelctor ),
@@ -117,8 +117,7 @@ function whenSectionInView( i, $section, navbarExists, nOfSections )
             let tlPosition = ( index > 0 ) ? '<+=20%' : '+=0'
             tl.from( $(this)[0],
             {
-                y: '100%', 
-                alpha: 0, 
+                y: '100%',
                 duration: 0.65, 
                 ease: "power4.out" 
             }, tlPosition )
