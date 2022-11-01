@@ -15,12 +15,10 @@ const mainWrapperSelector = '.main-wrapper',
     bmgSectionSelctor = '[bmg-gsap = "section"]',
     fullScreenImageSelector = '[bmg-gsap = "fullscreen"]'
 
-let isFirstTrigger = []
-
 // # Main functions #
 
 // Navbar
-gsap.from( $( '.navbar' ), { alpha:0, y: '-10rem', duration: 2, ease: "power4.out" })
+gsap.from( $( '.navbar' ), { alpha:0, y: '-1rem', duration: 2.5, ease: "power4.out" })
 
 // Prepare texts
 new SplitType( $(splitTextSelector).not( noSplitTextSelector ) )
@@ -28,6 +26,9 @@ $( headingsSelector ).find( '.line' ).wrap('<div class="line-parent" style="over
 
 
 // Go through every section and call functions
+let isFirstTrigger = [],
+    nOfSections = $( mainWrapperSelector ).children().length
+
 if ( $( bmgSectionSelctor ).length < 1 )
 {
     $( mainWrapperSelector ).children().each(function(index)
@@ -39,7 +40,7 @@ if ( $( bmgSectionSelctor ).length < 1 )
         ScrollTrigger.create({
             trigger: $section[0],
             start: 'top 80%',
-            onEnter: () => { whenSectionInView( index, $section, true ) }
+            onEnter: () => { whenSectionInView( index, $section, true, nOfSections ) }
         })
     })
 }
@@ -54,7 +55,7 @@ else
         ScrollTrigger.create({
             trigger: $section[0],
             start: 'top 80%',
-            onEnter: () => { whenSectionInView( index, $section, false ) }
+            onEnter: () => { whenSectionInView( index, $section, false, NaN ) }
         })
     })
 }
@@ -63,9 +64,9 @@ else
 // # Helper functions #
 
 // When section appears in view
-function whenSectionInView( i, $section, navbarExists ) 
+function whenSectionInView( i, $section, navbarExists, nOfSections )
 {
-    if ( navbarExists && i == 0 ) // Not the navbar
+    if ( navbarExists && (i == 0 || i == nOfSections ) ) // Not the navbar
     {
         return
     }
@@ -75,11 +76,12 @@ function whenSectionInView( i, $section, navbarExists )
         isFirstTrigger[i] = false // Ensure correct function calling
 
         // Local variables & elements
-        let tl = gsap.timeline()
-        let $texts = $section.find( allTextSelctor ).not( dontAnimateSelector )
-        let $freeFloatingImages = $section.find( freeFloatImageSelector )
-        let $dynItems = $section.find( dynItemSelctor )
-        let $fullScreenImages = $section.find( fullScreenImageSelector )
+        let tl = gsap.timeline(),
+            $headings = $section.find( headingsSelector ).not( dontAnimateSelector ).find( '.line' )
+            $texts = $section.find( allTextSelctor ).not( dontAnimateSelector ).not( $headings ),
+            $freeFloatingImages = $section.find( freeFloatImageSelector ),
+            $dynItems = $section.find( dynItemSelctor ),
+            $fullScreenImages = $section.find( fullScreenImageSelector )
 
         // Free floating images
         $freeFloatingImages.each(function(index) 
@@ -109,15 +111,28 @@ function whenSectionInView( i, $section, navbarExists )
             })
         })
 
-        // Text animation
-        $texts.each(function(index)
+        // Heading animation
+        $headings.each(function(index)
         {
-            let tlPosition = ( index > 0 ) ? '-=80%' : '+=0%'
+            let tlPosition = ( index > 0 ) ? '<+=20%' : '+=0'
             tl.from( $(this)[0],
             {
                 y: '100%', 
                 alpha: 0, 
-                duration: .65, 
+                duration: 0.65, 
+                ease: "power4.out" 
+            }, tlPosition )
+        })
+
+        // Text animation
+        $texts.each(function(index)
+        {
+            let tlPosition = ( index > 0 ) ? '<+=20%' : '+=0'
+            tl.from( $(this)[0],
+            {
+                y: '100%', 
+                alpha: 0, 
+                duration: 0.85, 
                 ease: "power4.out" 
             }, tlPosition )
         })
@@ -125,7 +140,7 @@ function whenSectionInView( i, $section, navbarExists )
         // Dynamic items
         $dynItems.each(function(index) 
         {
-            let tlPosition = '-=80%'
+            let tlPosition = '<+=20%'
             tl.from( $(this)[0],
             {
                 alpha: 0,
