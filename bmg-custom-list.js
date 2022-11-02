@@ -19,8 +19,6 @@ $(listWrapperSelector).each(function()
     // - Glocal elements -
     let $listWrapper = $(this)
         $list = $listWrapper.find(listSelctor),
-        $prevButton = $listWrapper.parent().find(prevButtonSelector),
-        $nextButton = $listWrapper.parent().find(nextButtonSelector),
         $tabsMenu = $listWrapper.parent().find(tabsMenuSelctor)
 
     // - Glocal functions & variables -
