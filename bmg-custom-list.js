@@ -33,10 +33,83 @@ $(listWrapperSelector).each(function()
 
     // Sort all items by month
     displayDynItemsSortedBy( $list, jsDynItems, 'month', $tabsMenu )
+
+    // Create current journey tab texts
+    createCurrentJourneyTabText( $list, $tabsMenu )
+    $list.click(() => { createCurrentJourneyTabText( $list, $tabsMenu ) })
 })
 
 
 // # Helper functions #
+
+// Create current journey tab texts
+function createCurrentJourneyTabText( $list, $tabsMenu )
+{
+    let months = createMonthsObject( $tabsMenu )
+
+    for ( i = 0, n = months.length; i < n; i++ )
+    {
+        let $currentTabText = months[i].$.find(journeyTabCurrentTextSelector),
+            categoriesArray = $currentTabText.text().substring(6).split('$X$X$X'),
+            categoriesArrayLength = categoriesArray.length,
+            newString = '',
+            writeOutUpToXCategories = 2,
+            notWrittenCounter = 0
+
+        for ( i2 = 0, n2 = categoriesArrayLength; i2 < n2; i2++ )
+        {
+            let name = categoriesArray[i2],
+                counter = 0
+
+            for ( i3 = 0, n3 = n2; i3 < n3; i3++ )
+            {
+                if ( categoriesArray[i3] == name )
+                {
+                    counter++
+                    categoriesArray[i3] = ''
+                }
+            }
+
+            if ( name != '' )
+            {
+                categoriesArray.push(
+                {
+                    'name': name,
+                    'count': counter
+                })
+            }
+        }
+
+        // New categories array created
+        categoriesArray.splice(0, categoriesArrayLength)
+        categoriesArrayLength = categoriesArray.length
+
+        for ( i2 = 0, n2 = categoriesArrayLength; i2 < n2; i2++ )
+        {
+            let count = categoriesArray[i2].count,
+                name = categoriesArray[i2].name
+            
+            if ( i2 < writeOutUpToXCategories )
+            {
+                if ( count <= 1 )
+                {
+                    newString += ', ' + name
+                }
+                else
+                {
+                    newString += ', (' + count + '×) ' + name
+                }
+            }
+            else
+            {
+                notWrittenCounter += count
+            }
+        }
+
+        newString = newString.substring(2) + ( ( notWrittenCounter > 0 ) ? ',\n+ ' + notWrittenCounter + ' more' : '' )
+        $currentTabText.text(newString)
+    }
+}
 
 // Prepare current months structure
 function prepareCurrentMonthsTabStructure( $tabs )
@@ -67,13 +140,17 @@ function countEvents( $tabsMenu, $list )
 
     $list.find(dynItemSelctor).each(function()
     {
-        let month = $(this).find( monthSelector ).text()
+        let month = $(this).find( monthSelector ).text(),
+            category = $(this).find( categorySelector ).text()
+
+        month = ( month != '' ) ? month : months[0].name
 
         for ( i = 0, n = months.length; i < n; i++ )
         {
             if ( months[i].name == month )
             {
                 months[i].eventCount ++
+                months[i].eventCategoriesString += '$X$X$X' + category
             }
         }
     })
@@ -81,13 +158,18 @@ function countEvents( $tabsMenu, $list )
     for ( i = 0, n = months.length; i < n; i++ )
     {
         let $eventCounter = months[i].$eventCounter,
-            target = { val: parseInt( $eventCounter.text() ) }
+            target = { val: parseInt( $eventCounter.text() ) },
+            categoriesString = months[i].eventCategoriesString,
+            $journeyTabCurrentText = months[i].$.find(journeyTabCurrentTextSelector)
+
+        $journeyTabCurrentText.text(categoriesString)
 
         gsap.to(target, { duration: 1, ease: "power4.out", val: months[i].eventCount, onUpdate: function()
         {
             $eventCounter.text( target.val.toFixed(0) )
         }} )
     }
+
 }
 
 // When category clicked
@@ -165,7 +247,8 @@ function createMonthsObject( $tabsMenu )
             '$': $(this),
             'name': $(this).find(tabMonthTextSelector).text(),
             '$eventCounter': $(this).find(numberOfEventsTextSelector),
-            'eventCount': 0
+            'eventCount': 0,
+            'eventCategoriesString': ''
         })
     })
 
@@ -211,6 +294,6 @@ function returnDynItemSortNumber( month, months )
     }
 
     return 0
-}   
+}         
 
 })() /* Start of: BMG custom list code */
