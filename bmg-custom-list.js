@@ -10,7 +10,10 @@ const monthSelector = '[bmg-custom-list = "month"]',
     tabSelctor = '.journey_tab-link',
     currentTabClass = '.is--current',
     tabMonthTextSelector = '.text-size-large',
-    numberOfEventsTextSelector = '[fs-countitems-element = "value"]'
+    numberOfEventsTextSelector = '[fs-countitems-element = "value"]',
+    journeyTabCurrentTextParentSelector = '[bmg-custom-list = "journeyTabCurrentParent"]',
+    journeyTabCurrentTextWrapperSelector = '.journey_tab-current',
+    journeyTabCurrentTextSelector = '[bmg-custom-list = "journeyTabCurrentText"]'
 
 
 // # Main functions #
