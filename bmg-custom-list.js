@@ -8,7 +8,6 @@ const monthSelector = '[bmg-custom-list = "month"]',
     dynItemSelctor = '.w-dyn-item',
     tabsMenuSelctor = '.journey_tabs-menu',
     tabSelctor = '.journey_tab-link',
-    currentTabClass = '.is--current',
     tabMonthTextSelector = '.text-size-large',
     numberOfEventsTextSelector = '[fs-countitems-element = "value"]',
     journeyTabCurrentTextParentSelector = '[bmg-custom-list = "journeyTabCurrentParent"]',
@@ -27,7 +26,7 @@ $(listWrapperSelector).each(function()
     // - Glocal functions & variables -
 
     // Prepare current months structure
-    prepareCurrentMonthsTabStructure( $tabs )
+    prepareCurrentMonthsTabStructure( $tabsMenu.find(tabSelctor) )
 
     // Create js object
     let jsDynItems = createJsDynItems( $listWrapper.find(dynItemSelctor), $tabsMenu )
