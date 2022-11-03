@@ -23,6 +23,9 @@ $(listWrapperSelector).each(function()
 
     // - Glocal functions & variables -
 
+    // Prepare current months structure
+    prepareCurrentMonthsTabStructure( $tabs )
+
     // Create js object
     let jsDynItems = createJsDynItems( $listWrapper.find(dynItemSelctor), $tabsMenu )
 
@@ -32,6 +35,28 @@ $(listWrapperSelector).each(function()
 
 
 // # Helper functions #
+
+// Prepare current months structure
+function prepareCurrentMonthsTabStructure( $tabs )
+{
+    $tabs.find(journeyTabCurrentTextParentSelector).remove()
+
+    $tabs.each(function()
+    {
+        $(this).prepend(
+        `
+            <div ${ journeyTabCurrentTextParentSelector.slice(0, -1).substring(1) } style="height: 0px; overflow: hidden;">
+                <div class="${ journeyTabCurrentTextWrapperSelector.substring(1) }">
+                    <div ${ journeyTabCurrentTextSelector.slice(0, -1).substring(1) } class="text-size-tiny">
+                        replace.
+                        <br>
+                        me.
+                    </div>
+                </div>
+            </div>
+        `)
+    })
+}
 
 // Count number of events & display them
 function countEvents( $tabsMenu, $list )
