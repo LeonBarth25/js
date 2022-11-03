@@ -106,8 +106,8 @@ function createCurrentJourneyTabText( $list, $tabsMenu )
             }
         }
 
-        newString = newString.substring(2) + ( ( notWrittenCounter > 0 ) ? ',\n+ ' + notWrittenCounter + ' more' : '' )
-        $currentTabText.text(newString)
+        newString = newString.substring(2) + ( ( notWrittenCounter > 0 ) ? ',<br>+ ' + notWrittenCounter + ' more' : '' )
+        $currentTabText.html(newString)
     }
 }
 
