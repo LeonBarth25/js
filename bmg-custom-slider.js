@@ -96,7 +96,13 @@ $(listWrapperSelector).each(function()
         $nextSlideText.text( newSlideNextText )
 
         // Animate buttons & slide text parent
-        if ( showItemN+1 >= nOfItems )
+        if ( nOfItems <= 1 )
+        {
+            gsap.set( $nextSlideText.parent()[0], { opacity: 0 } )
+            gsap.to( $nextButton[0], { opacity: 0, pointerEvents: 'none', duration: .35 } )
+            gsap.to( $prevButton[0], { opacity: 0, pointerEvents: 'auto', duration: .35 } )
+        }
+        else if ( showItemN+1 >= nOfItems )
         {
             gsap.set( $nextSlideText.parent()[0], { opacity: 0 } )
             gsap.to( $nextButton[0], { opacity: 0, pointerEvents: 'none', duration: .35 } )
@@ -118,7 +124,7 @@ $(listWrapperSelector).each(function()
         // Animate months
         for ( i = 0, n = monthsObject.length; i < n; i++ )
         {
-            if ( monthsObject[i].name == thisMonthText || thisMonthText == '' )
+            if ( monthsObject[i].name == thisMonthText || thisMonthText == '' )
             {
                 // Other months
                 let $texts = $tabs.find( journeyTabCurrentTextParentSelector )
