@@ -50,64 +50,68 @@ function createCurrentJourneyTabText( $list, $tabsMenu )
     for ( i = 0, n = months.length; i < n; i++ )
     {
         let $currentTabText = months[i].$.find(journeyTabCurrentTextSelector),
-            categoriesArray = $currentTabText.text().substring(6).split('$X$X$X'),
+            categoriesString = $currentTabText.text()
+            categoriesArray = categoriesString.substring(6).split('$X$X$X'),
             categoriesArrayLength = categoriesArray.length,
             newString = '',
             writeOutUpToXCategories = 2,
             notWrittenCounter = 0
 
-        for ( i2 = 0, n2 = categoriesArrayLength; i2 < n2; i2++ )
+        if ( categoriesString.indexOf('$X$X$X') > -1 )
         {
-            let name = categoriesArray[i2],
-                counter = 0
-
-            for ( i3 = 0, n3 = n2; i3 < n3; i3++ )
+            for ( i2 = 0, n2 = categoriesArrayLength; i2 < n2; i2++ )
             {
-                if ( categoriesArray[i3] == name )
+                let name = categoriesArray[i2],
+                    counter = 0
+
+                for ( i3 = 0, n3 = n2; i3 < n3; i3++ )
                 {
-                    counter++
-                    categoriesArray[i3] = ''
+                    if ( categoriesArray[i3] == name )
+                    {
+                        counter++
+                        categoriesArray[i3] = ''
+                    }
+                }
+
+                if ( name != '' )
+                {
+                    categoriesArray.push(
+                    {
+                        'name': name,
+                        'count': counter
+                    })
                 }
             }
 
-            if ( name != '' )
+            // New categories array created
+            categoriesArray.splice(0, categoriesArrayLength)
+            categoriesArrayLength = categoriesArray.length
+
+            for ( i2 = 0, n2 = categoriesArrayLength; i2 < n2; i2++ )
             {
-                categoriesArray.push(
-                {
-                    'name': name,
-                    'count': counter
-                })
-            }
-        }
-
-        // New categories array created
-        categoriesArray.splice(0, categoriesArrayLength)
-        categoriesArrayLength = categoriesArray.length
-
-        for ( i2 = 0, n2 = categoriesArrayLength; i2 < n2; i2++ )
-        {
-            let count = categoriesArray[i2].count,
-                name = categoriesArray[i2].name
+                let count = categoriesArray[i2].count,
+                    name = categoriesArray[i2].name
             
-            if ( i2 < writeOutUpToXCategories )
-            {
-                if ( count <= 1 )
+                if ( i2 < writeOutUpToXCategories )
                 {
-                    newString += ', ' + name
+                    if ( count <= 1 )
+                    {
+                        newString += ', ' + name
+                    }
+                    else
+                    {
+                        newString += ', (' + count + '×) ' + name
+                    }
                 }
                 else
                 {
-                    newString += ', (' + count + '×) ' + name
+                    notWrittenCounter += count
                 }
             }
-            else
-            {
-                notWrittenCounter += count
-            }
-        }
 
-        newString = newString.substring(2) + ( ( notWrittenCounter > 0 ) ? ',<br>+ ' + notWrittenCounter + ' more' : '' )
-        $currentTabText.html(newString)
+            newString = newString.substring(2) + ( ( notWrittenCounter > 0 ) ? ',<br>+ ' + notWrittenCounter + ' more' : '' )
+            $currentTabText.html(newString)
+        }
     }
 }
 
