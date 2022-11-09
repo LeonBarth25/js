@@ -55,6 +55,8 @@ $(`[${ sliderAttribute }]`).each(function()
     }
 
     // Trigger
+    tl.pause() // Initiliaze
+
     ScrollTrigger.create(
     {
         trigger: $slider[0],
