@@ -17,7 +17,8 @@ $(`[${ sliderAttribute }]`).each(function()
         $right = $slider.find(rightSelctor),
         progressBars = $slider[0].querySelectorAll(progressBarSelector),
         animationTime = parseInt( $slider.attr( sliderAttribute ) ),
-        repeatDelayTime = parseInt( $slider.attr( 'bmg-gsap-repeat-delay' ) ) || 500
+        repeatDelayTime = parseInt( $slider.attr( 'bmg-gsap-repeat-delay' ) ) || 500,
+        hoverEffectBool = $slider.attr( 'bmg-gsap-hover-effect' ) || false
 
     // - Local functions -
 
@@ -66,7 +67,7 @@ $(`[${ sliderAttribute }]`).each(function()
         onLeaveBack: () => { stopAnimation() }
     })
 
-    $slider.hover( stopAnimation, startAnimation )
+    if ( hoverEffectBool ) { $slider.hover( stopAnimation, startAnimation ) }
 
     // Controller functions
     function startAnimation()
