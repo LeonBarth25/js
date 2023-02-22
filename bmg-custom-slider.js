@@ -104,7 +104,7 @@
 
       // Animate buttons & slide text parent
       if (nOfItems <= 1) {
-        gsap.set($nextSlideText.parent()[0], { opacity: 1 });
+        // gsap.set($nextSlideText.parent()[0], { opacity: .5 });
         gsap.to($nextButton[0], {
           opacity: 1,
           pointerEvents: 'auto',
@@ -116,7 +116,7 @@
           duration: 0.35,
         });
       } else if (showItemN + 1 >= nOfItems) {
-        gsap.set($nextSlideText.parent()[0], { opacity: 1 });
+        // gsap.set($nextSlideText.parent()[0], { opacity: .5 });
         gsap.to($nextButton[0], {
           opacity: 1,
           pointerEvents: 'auto',
@@ -128,7 +128,7 @@
           duration: 0.35,
         });
       } else if (showItemN > 0) {
-        // gsap.to( $nextSlideText.parent()[0], { opacity: 1, duration: .35 } )
+        // gsap.to( $nextSlideText.parent()[0], { opacity: .5, duration: .35 } )
         gsap.to($nextButton[0], {
           opacity: 1,
           pointerEvents: 'auto',
@@ -140,7 +140,7 @@
           duration: 0.35,
         });
       } else {
-        // gsap.to( $nextSlideText.parent()[0], { opacity: 1, duration: .35 } )
+        // gsap.to( $nextSlideText.parent()[0], { opacity: .5, duration: .35 } )
         gsap.to($nextButton[0], {
           opacity: 1,
           pointerEvents: 'auto',
